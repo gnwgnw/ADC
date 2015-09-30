@@ -76,6 +76,93 @@ function button_load_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+[filename, pathname] = uigetfile('out.txt', 'Выберите файл данных');
+if  ~isequal(filename,0)
+    filename = fullfile(pathname, filename);
+    
+    % Prepare data
+    FREQ = 102400;
+    SPREAD = 10;
+
+    M = dlmread(filename, '', 1, 0);
+    
+    handles.freq = FREQ / SPREAD;
+    
+    handles.T = M(1:SPREAD:end, 1);
+    handles.X_filth = M(1:SPREAD:end, 2);
+    handles.Y_filth = M(1:SPREAD:end, 3);
+    handles.P_filth = M(1:SPREAD:end, 4);
+    
+    handles.t0 = handles.T(1);
+    handles.t1 = handles.T(end);
+    
+    handles.L = str2double(get(handles.edit_L, 'String'));
+    
+    handles.X = handles.X_filth;
+    handles.Y = handles.Y_filth;
+    handles.P = handles.P_filth;
+    
+    handles.shift_X = str2double(get(handles.edit_shiftX, 'String'));
+    handles.shift_Y = str2double(get(handles.edit_shiftY, 'String'));
+    
+    handles.multipler = 1e-1;
+    
+    handles = main_calculate(handles);
+    
+    % Show results
+    set(handles.text_filename, 'String', filename);
+    set(handles.edit_t1, 'String', handles.t1);
+    set(handles.text_K, 'String', handles.K);
+    
+    axes(handles.axes_XY);
+    hold on;
+    grid on;
+    
+    handles.plot_X = plot(handles.T, handles.X);
+    handles.plot_Y = plot(handles.T, handles.Y);
+    handles.plot_t0_XY = vline(handles.t0, '', 't0');
+    handles.plot_t1_XY = vline(handles.t1, '', 't1');
+    legend('X', 'Y');
+    
+    axes(handles.axes_curve);
+    hold on;
+    axis equal;
+    grid on;
+    
+    handles.plot_G = plot(handles.X, handles.Y);
+    legend('G');
+    
+    axes(handles.axes_phi);
+    hold on;
+    grid on;
+    
+    handles.plot_phi = plot(handles.T, handles.phi);
+    handles.plot_t0_phi = vline(handles.t0, '', 't0');
+    handles.plot_t1_phi = vline(handles.t1, '', 't1');
+    legend('phi');
+    
+    axes(handles.axes_P);
+    hold on;
+    grid on;
+    
+    handles.plot_P = plot(handles.T, handles.P);
+    handles.plot_t0_P = vline(handles.t0, '', 't0');
+    handles.plot_t1_P = vline(handles.t1, '', 't1');
+    legend('P');
+    
+    axes(handles.axes_u);
+    hold on;
+    grid on;
+    
+    handles.plot_u = plot(handles.T(1:end-1), handles.u);
+	handles.plot_t0_u = vline(handles.t0, '', 't0');
+    handles.plot_t1_u = vline(handles.t1, '', 't1');
+    legend('u');
+    
+    % Update handles structure
+    guidata(hObject, handles);
+end
+
 
 % --- Executes on button press in button_filter<>.
 function button_filter_Callback(hObject, eventdata, handles)
@@ -89,8 +176,11 @@ function edit_L_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit_L as text
-%        str2double(get(hObject,'String')) returns contents of edit_L as a double
+handles.L = str2double(get(hObject, 'String'));
+handles = update_K(handles);
+
+% Update handles structure
+guidata(hObject, handles);
 
 
 function edit_t_Callback(hObject, eventdata, handles)
@@ -98,8 +188,18 @@ function edit_t_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit_t<> as text
-%        str2double(get(hObject,'String')) returns contents of edit_t<> as a double
+tag = get(hObject, 'Tag');
+val = str2double(get(hObject,'String'));
+
+tokens = regexp(tag,'edit_(t\d)', 'tokens');
+field = tokens{1}{1};
+
+handles.(field) = val;
+
+handles = update_K(handles);
+
+% Update handles structure
+guidata(hObject, handles);
 
 
 function edit_shift_Callback(hObject, eventdata, handles)
@@ -130,3 +230,99 @@ function button_save_Callback(hObject, eventdata, handles)
 % hObject    handle to button_save (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+function phi = phi(X, Y)
+
+G = complex(X, Y);
+phi = unwrap(angle(G));
+
+
+function omega = omega(phi, freq)
+
+omega = diff(phi) .* freq;
+
+
+function u = u(omega, K)
+
+u = omega .* K;
+
+
+function K = K(L, phi0, phi1)
+
+K = L / abs(phi1 - phi0);
+
+
+function handles_out = main_calculate(handles)
+
+handles.phi = phi(handles.X, handles.Y);
+handles.omega = omega(handles.phi, handles.freq);
+
+sample0 = int64(handles.t0 * handles.freq) + 1;
+sample1 = int64(handles.t1 * handles.freq);
+
+handles.K = K(handles.L, handles.phi(sample0), handles.phi(sample1));
+
+handles.u = u(handles.omega, handles.K);
+
+handles_out = handles;
+
+
+function handles_out = update_XY(handles)
+
+% Update data
+handles.phi = phi(handles.X, handles.Y);
+handles.omega = omega(handles.phi, handles.freq);
+handles.u = u(handles.omega, handles.K);
+
+% Update plots
+handles.plot_X.YData = handles.X;
+handles.plot_Y.YData = handles.Y;
+
+handles.plot_G.XData = handles.X;
+handles.plot_G.YData = handles.Y;
+
+handles.plot_phi.YData = handles.phi;
+
+handles.plot_u.YData = handles.u;
+
+handles_out = handles;
+
+
+function handles_out = update_K(handles)
+
+% Update data
+sample0 = int64(handles.t0 * handles.freq) + 1;
+sample1 = int64(handles.t1 * handles.freq);
+
+handles.K = K(handles.L, handles.phi(sample0), handles.phi(sample1));
+handles.u = u(handles.omega, handles.K);
+
+% Update plots
+handles.text_K.('String') = handles.K;
+
+handles.plot_u.YData = handles.u;
+
+handles = update_t_plots(handles);
+
+handles_out = handles;
+
+
+function handles_out = update_t_plots(handles)
+
+t0 = handles.t0;
+t1 = handles.t1;
+
+handles.plot_t0_XY.XData = [t0, t0];
+handles.plot_t1_XY.XData = [t1, t1];
+
+handles.plot_t0_phi.XData = [t0, t0];
+handles.plot_t1_phi.XData = [t1, t1];
+
+handles.plot_t0_P.XData = [t0, t0];
+handles.plot_t1_P.XData = [t1, t1];
+
+handles.plot_t0_u.XData = [t0, t0];
+handles.plot_t1_u.XData = [t1, t1];
+
+handles_out = handles;
