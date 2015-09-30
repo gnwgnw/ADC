@@ -78,12 +78,15 @@ function button_load_Callback(hObject, eventdata, handles)
 
 [filename, pathname] = uigetfile('out.txt', 'Выберите файл данных');
 if  ~isequal(filename,0)
+    handles.figure1.('Pointer') = 'watch';
+    pause(0.01);
+    
     filename = fullfile(pathname, filename);
     
     % Prepare data
     FREQ = 102400;
     SPREAD = 10;
-
+    
     M = dlmread(filename, '', 1, 0);
     
     handles.freq = FREQ / SPREAD;
@@ -120,8 +123,8 @@ if  ~isequal(filename,0)
     
     handles.plot_X = plot(handles.T, handles.X);
     handles.plot_Y = plot(handles.T, handles.Y);
-    handles.plot_t0_XY = vline(handles.t0, '', 't0');
-    handles.plot_t1_XY = vline(handles.t1, '', 't1');
+    handles.plot_t0_XY = vline(handles.t0);
+    handles.plot_t1_XY = vline(handles.t1);
     legend('X', 'Y');
     
     axes(handles.axes_curve);
@@ -137,8 +140,8 @@ if  ~isequal(filename,0)
     grid on;
     
     handles.plot_phi = plot(handles.T, handles.phi);
-    handles.plot_t0_phi = vline(handles.t0, '', 't0');
-    handles.plot_t1_phi = vline(handles.t1, '', 't1');
+    handles.plot_t0_phi = vline(handles.t0);
+    handles.plot_t1_phi = vline(handles.t1);
     legend('phi');
     
     axes(handles.axes_P);
@@ -146,8 +149,8 @@ if  ~isequal(filename,0)
     grid on;
     
     handles.plot_P = plot(handles.T, handles.P);
-    handles.plot_t0_P = vline(handles.t0, '', 't0');
-    handles.plot_t1_P = vline(handles.t1, '', 't1');
+    handles.plot_t0_P = vline(handles.t0);
+    handles.plot_t1_P = vline(handles.t1);
     legend('P');
     
     axes(handles.axes_u);
@@ -155,9 +158,11 @@ if  ~isequal(filename,0)
     grid on;
     
     handles.plot_u = plot(handles.T(1:end-1), handles.u);
-	handles.plot_t0_u = vline(handles.t0, '', 't0');
-    handles.plot_t1_u = vline(handles.t1, '', 't1');
+	handles.plot_t0_u = vline(handles.t0);
+    handles.plot_t1_u = vline(handles.t1);
     legend('u');
+    
+    handles.figure1.('Pointer') = 'arrow';
     
     % Update handles structure
     guidata(hObject, handles);
@@ -169,6 +174,24 @@ function button_filter_Callback(hObject, eventdata, handles)
 % hObject    handle to button_filterP (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+tag = get(hObject, 'Tag');
+
+tokens = regexp(tag,'button_filter(\w)', 'tokens');
+field = tokens{1}{1};
+filth_field = strcat(field, '_filth');
+
+handles.(field) = accept_filter(handles.(filth_field), handles.freq);
+
+switch field
+    case 'P'
+        handles = update_P(handles);
+    otherwise
+        handles = update_XY(handles);
+end
+
+% Update handles structure
+guidata(hObject, handles);
 
 
 function edit_L_Callback(hObject, eventdata, handles)
@@ -286,6 +309,8 @@ handles.plot_phi.YData = handles.phi;
 
 handles.plot_u.YData = handles.u;
 
+handles = update_t_plots(handles);
+
 handles_out = handles;
 
 
@@ -310,19 +335,34 @@ handles_out = handles;
 
 function handles_out = update_t_plots(handles)
 
+plots = {'XY', 'phi', 'P', 'u'};
+
 t0 = handles.t0;
 t1 = handles.t1;
 
-handles.plot_t0_XY.XData = [t0, t0];
-handles.plot_t1_XY.XData = [t1, t1];
+for name = plots
+    name = name{1};
 
-handles.plot_t0_phi.XData = [t0, t0];
-handles.plot_t1_phi.XData = [t1, t1];
+    axes_name = strcat('axes_', name);
+    plot0_name = strcat('plot_t0_', name);
+    plot1_name = strcat('plot_t1_', name);
+    
+    delete(handles.(plot0_name));
+    delete(handles.(plot1_name));
+    
+    axes(handles.(axes_name));
+    handles.(plot0_name) = vline(t0);
+    handles.(plot1_name) = vline(t1);
+end
 
-handles.plot_t0_P.XData = [t0, t0];
-handles.plot_t1_P.XData = [t1, t1];
+handles_out = handles;
 
-handles.plot_t0_u.XData = [t0, t0];
-handles.plot_t1_u.XData = [t1, t1];
+
+function handles_out = update_P(handles)
+
+% Update plots
+handles.plot_P.YData = handles.P;
+
+handles = update_t_plots(handles);
 
 handles_out = handles;
