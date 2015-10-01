@@ -268,6 +268,7 @@ switch dir
 end
 
 handles = update_XY(handles);
+handles = update_shift_text(handles);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -278,6 +279,11 @@ function radiobutton_mulitpler_Callback(hObject, eventdata, handles)
 % hObject    handle to radiobutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+handles.multipler = str2double(hObject.('String'));
+
+% Update handles structure
+guidata(hObject, handles);
 
 
 % --- Executes on button press in button_save.
@@ -399,5 +405,13 @@ function handles_out = update_P(handles)
 handles.plot_P.YData = handles.P;
 
 handles = update_t_plots(handles);
+
+handles_out = handles;
+
+
+function handles_out = update_shift_text(handles)
+
+handles.edit_shiftX.('String') = handles.shift_X;
+handles.edit_shiftY.('String') = handles.shift_Y;
 
 handles_out = handles;
