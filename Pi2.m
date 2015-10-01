@@ -22,7 +22,7 @@ function varargout = Pi2(varargin)
 
 % Edit the above text to modify the response to help Pi2
 
-% Last Modified by GUIDE v2.5 30-Sep-2015 11:34:22
+% Last Modified by GUIDE v2.5 01-Oct-2015 20:14:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -415,3 +415,22 @@ handles.edit_shiftX.('String') = handles.shift_X;
 handles.edit_shiftY.('String') = handles.shift_Y;
 
 handles_out = handles;
+
+
+% --- Executes on key press with focus on figure1 or any of its controls.
+function figure1_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+
+tokens = regexp(eventdata.Key, '(\w+)arrow', 'tokens');
+
+if ~isempty(tokens)
+    dir = tokens{1}{1};
+    tag = strcat('button_', dir);
+    
+    button_shift_Callback(handles.(tag), eventdata, handles);
+end
