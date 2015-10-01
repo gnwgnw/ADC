@@ -230,8 +230,19 @@ function edit_shift_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit_shift<> as text
-%        str2double(get(hObject,'String')) returns contents of edit_shift<> as a double
+tag = get(hObject, 'Tag');
+val = str2double(get(hObject,'String'));
+
+tokens = regexp(tag,'edit_shift(\w)', 'tokens');
+field = tokens{1}{1};
+field = strcat('shift_', field);
+
+handles.(field) = val;
+
+handles = update_XY(handles);
+
+% Update handles structure
+guidata(hObject, handles);
 
 
 % --- Executes on button press in shift buttons.
@@ -239,6 +250,27 @@ function button_shift_Callback(hObject, eventdata, handles)
 % hObject    handle to button_right (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+tag = get(hObject, 'Tag');
+
+tokens = regexp(tag,'button_(\w+)', 'tokens');
+dir = tokens{1}{1};
+
+switch dir
+    case 'up'
+        handles.shift_Y = handles.shift_Y + handles.multipler;
+    case 'down'
+        handles.shift_Y = handles.shift_Y - handles.multipler;
+    case 'left'
+        handles.shift_X = handles.shift_X - handles.multipler;
+    case 'right'
+        handles.shift_X = handles.shift_X + handles.multipler;
+end
+
+handles = update_XY(handles);
+
+% Update handles structure
+guidata(hObject, handles);
 
 
 % --- Executes on button press in multipler radiobuttons.
@@ -293,17 +325,20 @@ handles_out = handles;
 
 function handles_out = update_XY(handles)
 
+X_shifted = handles.X + handles.shift_X;
+Y_shifted = handles.Y + handles.shift_Y;
+
 % Update data
-handles.phi = phi(handles.X, handles.Y);
+handles.phi = phi(X_shifted, Y_shifted);
 handles.omega = omega(handles.phi, handles.freq);
 handles.u = u(handles.omega, handles.K);
 
 % Update plots
-handles.plot_X.YData = handles.X;
-handles.plot_Y.YData = handles.Y;
+handles.plot_X.YData = X_shifted;
+handles.plot_Y.YData = Y_shifted;
 
-handles.plot_G.XData = handles.X;
-handles.plot_G.YData = handles.Y;
+handles.plot_G.XData = X_shifted;
+handles.plot_G.YData = Y_shifted;
 
 handles.plot_phi.YData = handles.phi;
 
