@@ -81,6 +81,7 @@ if  ~isequal(filename,0)
     handles.figure1.('Pointer') = 'watch';
     pause(0.01);
     
+    handles.dir_path = pathname;
     filename = fullfile(pathname, filename);
     
     % Prepare data
@@ -291,6 +292,22 @@ function button_save_Callback(hObject, eventdata, handles)
 % hObject    handle to button_save (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+handles.figure1.('Pointer') = 'watch';
+pause(0.01);
+    
+file_path = strcat(handles.dir_path, 'data.txt');
+fileID = fopen(file_path, 'w');
+
+out = [handles.T(1:end-1)'; handles.P(1:end-1)'; handles.u'];
+
+fprintf(fileID, '%8s %8s %8s\n', 't', 'P', 'u');
+fprintf(fileID, '%8.5f %8.4f %8.4f\n', out);
+
+fclose(fileID);
+
+handles.figure1.('Pointer') = 'arrow';
+
 
 
 function phi = phi(X, Y)
