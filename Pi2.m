@@ -86,6 +86,8 @@ if  ~isequal(filename,0)
     handles.dir_path = pathname;
     filename = fullfile(pathname, filename);
     
+    handles = clear_workspace(handles);
+    
     % Prepare data
     FREQ = 102400;
     SPREAD = 10;
@@ -179,6 +181,9 @@ function button_filter_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles.figure1.('Pointer') = 'watch';
+pause(0.01);
+    
 tag = get(hObject, 'Tag');
 
 tokens = regexp(tag,'button_filter(\w)', 'tokens');
@@ -193,6 +198,8 @@ switch field
     otherwise
         handles = update_XY(handles);
 end
+
+handles.figure1.('Pointer') = 'arrow';
 
 % Update handles structure
 guidata(hObject, handles);
@@ -467,6 +474,21 @@ controls = {'edit_L', 'button_filterX', 'button_filterY', 'button_filterP', ...
 for control = controls
     control = control{1};
     handles.(control).('Enable') = status;
+end
+
+handles_out = handles;
+
+
+function handles_out = clear_workspace(handles)
+
+names = fieldnames(handles);
+
+for name = names'
+    name = name{1};
+    
+    if isa(handles.(name), 'matlab.graphics.chart.primitive.Line')
+        delete(handles.(name));
+    end
 end
 
 handles_out = handles;
