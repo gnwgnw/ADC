@@ -52,6 +52,8 @@ function Pi2_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to Pi2 (see VARARGIN)
 
+handles = switch_enable_gui(handles, 'off');
+
 % Choose default command line output for Pi2
 handles.output = hObject;
 
@@ -164,6 +166,7 @@ if  ~isequal(filename,0)
     legend('u');
     
     handles.figure1.('Pointer') = 'arrow';
+    handles = switch_enable_gui(handles, 'on');
     
     % Update handles structure
     guidata(hObject, handles);
@@ -449,5 +452,21 @@ if ~isempty(tokens)
     dir = tokens{1}{1};
     tag = strcat('button_', dir);
     
-    button_shift_Callback(handles.(tag), eventdata, handles);
+    if strcmp(handles.(tag).('Enable'), 'on')
+        button_shift_Callback(handles.(tag), eventdata, handles);
+    end
 end
+
+
+function handles_out = switch_enable_gui(handles, status)
+
+controls = {'edit_L', 'button_filterX', 'button_filterY', 'button_filterP', ...
+    'edit_t0', 'edit_t1', 'edit_shiftX', 'edit_shiftY', 'button_up', ...
+    'button_down', 'button_left', 'button_right', 'button_save'};
+
+for control = controls
+    control = control{1};
+    handles.(control).('Enable') = status;
+end
+
+handles_out = handles;
