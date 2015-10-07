@@ -52,7 +52,7 @@ function Pi2_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to Pi2 (see VARARGIN)
 
-handles = switch_enable_gui(handles, 'off');
+handles = enable_gui(handles, 'off');
 
 % Choose default command line output for Pi2
 handles.output = hObject;
@@ -78,11 +78,16 @@ function button_load_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% Load out.txt file; fill T, XY components, P; set default values;
+% calculate u on filth data; handle plots.
+
 [filename, pathname] = uigetfile('out.txt', 'Выберите файл данных');
 if  ~isequal(filename,0)
     handles.figure1.('Pointer') = 'watch';
     pause(0.01);
     
+    % Remember path for save data.txt file in the same folder as the
+    % out.txt
     handles.dir_path = pathname;
     filename = fullfile(pathname, filename);
     
@@ -125,50 +130,54 @@ if  ~isequal(filename,0)
     axes(handles.axes_XY);
     hold on;
     grid on;
-    
+
     handles.plot_X = plot(handles.T, handles.X);
     handles.plot_Y = plot(handles.T, handles.Y);
     handles.plot_t0_XY = vline(handles.t0);
     handles.plot_t1_XY = vline(handles.t1);
     legend('X', 'Y');
-    
+
+
     axes(handles.axes_curve);
     hold on;
     axis equal;
     grid on;
-    
+
     handles.plot_G = plot(handles.X, handles.Y);
     legend('G');
-    
+
+
     axes(handles.axes_phi);
     hold on;
     grid on;
-    
+
     handles.plot_phi = plot(handles.T, handles.phi);
     handles.plot_t0_phi = vline(handles.t0);
     handles.plot_t1_phi = vline(handles.t1);
     legend('phi');
-    
+
+
     axes(handles.axes_P);
     hold on;
     grid on;
-    
+
     handles.plot_P = plot(handles.T, handles.P);
     handles.plot_t0_P = vline(handles.t0);
     handles.plot_t1_P = vline(handles.t1);
     legend('P');
-    
+
+
     axes(handles.axes_u);
     hold on;
     grid on;
-    
+
     handles.plot_u = plot(handles.T(1:end-1), handles.u);
 	handles.plot_t0_u = vline(handles.t0);
     handles.plot_t1_u = vline(handles.t1);
     legend('u');
     
     handles.figure1.('Pointer') = 'arrow';
-    handles = switch_enable_gui(handles, 'on');
+    handles = enable_gui(handles, 'on');
     
     % Update handles structure
     guidata(hObject, handles);
@@ -465,7 +474,7 @@ if ~isempty(tokens)
 end
 
 
-function handles_out = switch_enable_gui(handles, status)
+function handles_out = enable_gui(handles, status)
 
 controls = {'edit_L', 'button_filterX', 'button_filterY', 'button_filterP', ...
     'edit_t0', 'edit_t1', 'edit_shiftX', 'edit_shiftY', 'button_up', ...

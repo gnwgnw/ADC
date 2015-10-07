@@ -22,7 +22,7 @@ function varargout = accept_filter(varargin)
 
 % Edit the above text to modify the response to help accept_filter
 
-% Last Modified by GUIDE v2.5 29-Sep-2015 14:48:53
+% Last Modified by GUIDE v2.5 07-Oct-2015 11:10:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,23 +66,26 @@ else
 end
 
 handles.t = [0:length(handles.Data) - 1] ./ handles.filtparams.Fs;
+handles.t_slice = 0;
+
+handles.Data_sliced = handles.Data;
 
 handles.filtparams.Apass = str2double(get(handles.Apass, 'String'));
 handles.filtparams.Astop = str2double(get(handles.Astop, 'String'));
 handles.filtparams.Fpass = str2double(get(handles.Fpass, 'String'));
 handles.filtparams.Fstop = str2double(get(handles.Fstop, 'String'));
 
-df = create_filter(handles.filtparams);
-
-handles.Data_filtered = filtfilt(df, handles.Data);
+handles.df = create_filter(handles.filtparams);
+handles.Data_filtered = filtfilt(handles.df, handles.Data_sliced);
 
 hold on;
 grid on;
 
 plot(handles.t, handles.Data);
 handles.plot_data_filtered = plot(handles.t, handles.Data_filtered, 'LineWidth', 1.5);
-
 legend('Data', 'Filtered data');
+
+handles.plot_t_slice = vline(handles.t_slice);
 
 % Choose default command line output for accept_filter
 handles.output = hObject;
@@ -120,13 +123,10 @@ function params_edit_Callback(hObject, eventdata, handles)
 param_name = get(hObject, 'Tag');
 val = str2double(get(hObject, 'String'));
 
-handles.filtparams = setfield(handles.filtparams, param_name, val);
+handles.filtparams.(param_name) = val;
+handles.df = create_filter(handles.filtparams);
 
-df = create_filter(handles.filtparams);
-
-handles.Data_filtered = filtfilt(df, handles.Data);
-
-set(handles.plot_data_filtered, 'YData', handles.Data_filtered);
+handles = update_filtered_data(handles);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -155,3 +155,41 @@ else
     % The GUI is no longer waiting, just close it
     delete(hObject);
 end
+
+
+function edit_t_silce_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_t_silce (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_t_silce as text
+%        str2double(get(hObject,'String')) returns contents of edit_t_silce as a double
+
+% Данные до t_slice секунды удаляем, фильтруем и заполняем первым значением
+% отфильтрованных данных (в функции update_filtered_data)
+% Таким образом избавляемся от шума воспламенителя
+
+handles.t_slice = str2double(hObject.('String'));
+
+handles.Data_sliced = handles.Data;
+handles.Data_sliced(handles.t < handles.t_slice) = [];
+
+handles.plot_t_slice.('XData') = [handles.t_slice, handles.t_slice];
+
+handles = update_filtered_data(handles);
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+function handles = update_filtered_data(handles)
+
+handles.Data_filtered = filtfilt(handles.df, handles.Data_sliced);
+
+nan_size = length(handles.t(handles.t < handles.t_slice));
+nan_array(1:nan_size) = handles.Data_filtered(1);
+nan_array = nan_array';
+
+handles.Data_filtered = [nan_array; handles.Data_filtered];
+
+handles.plot_data_filtered.('YData') = handles.Data_filtered;
