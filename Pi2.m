@@ -22,7 +22,7 @@ function varargout = Pi2(varargin)
 
 % Edit the above text to modify the response to help Pi2
 
-% Last Modified by GUIDE v2.5 01-Oct-2015 20:14:00
+% Last Modified by GUIDE v2.5 08-Oct-2015 13:02:54
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -483,3 +483,77 @@ for name = names'
         delete(handles.(name));
     end
 end
+
+
+function max_corr = f_X0(handles, shift)
+
+X_shifted = handles.X + shift;
+Y_shifted = handles.Y + handles.shift_Y;
+
+phi_ = phi(X_shifted, Y_shifted);
+u_ = diff(phi_);
+acorr = xcorr(X_shifted, u_);
+max_corr = max(abs(acorr));
+
+
+function max_corr = f_Y0(handles, shift)
+
+X_shifted = handles.X + handles.shift_X;
+Y_shifted = handles.Y + shift;
+
+phi_ = phi(X_shifted, Y_shifted);
+u_ = diff(phi_);
+acorr = xcorr(Y_shifted, u_);
+max_corr = max(abs(acorr));
+
+
+% --- Executes on button press in button_auto_positioning_X.
+function button_auto_positioning_X_Callback(hObject, eventdata, handles)
+% hObject    handle to button_auto_positioning_X (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles.figure1.('Pointer') = 'watch';
+pause(0.01);
+
+eps = 1e-4;
+startX = str2double(handles.edit_auto_positioning_start.('String'));
+stopX = str2double(handles.edit_auto_positioning_stop.('String'));
+
+X0 = gss(handles, @f_X0, startX, stopX, eps);
+
+handles.shift_X = X0;
+
+handles = update_XY(handles);
+handles = update_shift_text(handles);
+
+handles.figure1.('Pointer') = 'arrow';
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes on button press in button_auto_positioning_Y.
+function button_auto_positioning_Y_Callback(hObject, eventdata, handles)
+% hObject    handle to button_auto_positioning_Y (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles.figure1.('Pointer') = 'watch';
+pause(0.01);
+
+eps = 1e-4;
+startY = str2double(handles.edit_auto_positioning_start.('String'));
+stopY = str2double(handles.edit_auto_positioning_stop.('String'));
+
+Y0 = gss(handles, @f_Y0, startY, stopY, eps);
+
+handles.shift_Y = Y0;
+
+handles = update_XY(handles);
+handles = update_shift_text(handles);
+
+handles.figure1.('Pointer') = 'arrow';
+
+% Update handles structure
+guidata(hObject, handles);
