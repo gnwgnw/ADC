@@ -22,7 +22,7 @@ function varargout = accept_filter(varargin)
 
 % Edit the above text to modify the response to help accept_filter
 
-% Last Modified by GUIDE v2.5 29-Sep-2015 14:48:53
+% Last Modified by GUIDE v2.5 08-Oct-2015 11:29:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,23 +66,30 @@ else
 end
 
 handles.t = [0:length(handles.Data) - 1] ./ handles.filtparams.Fs;
+handles.start_slice = handles.t(1);
+handles.stop_slice = handles.t(end);
+
+handles.edit_stop_slice.('String') = handles.stop_slice;
+
+handles.Data_sliced = handles.Data;
 
 handles.filtparams.Apass = str2double(get(handles.Apass, 'String'));
 handles.filtparams.Astop = str2double(get(handles.Astop, 'String'));
 handles.filtparams.Fpass = str2double(get(handles.Fpass, 'String'));
 handles.filtparams.Fstop = str2double(get(handles.Fstop, 'String'));
 
-df = create_filter(handles.filtparams);
-
-handles.Data_filtered = filtfilt(df, handles.Data);
+handles.df = create_filter(handles.filtparams);
+handles.Data_filtered = filtfilt(handles.df, handles.Data_sliced);
 
 hold on;
 grid on;
 
 plot(handles.t, handles.Data);
 handles.plot_data_filtered = plot(handles.t, handles.Data_filtered, 'LineWidth', 1.5);
-
 legend('Data', 'Filtered data');
+
+handles.plot_start_slice = vline(handles.start_slice);
+handles.plot_stop_slice = vline(handles.stop_slice);
 
 % Choose default command line output for accept_filter
 handles.output = hObject;
@@ -120,13 +127,10 @@ function params_edit_Callback(hObject, eventdata, handles)
 param_name = get(hObject, 'Tag');
 val = str2double(get(hObject, 'String'));
 
-handles.filtparams = setfield(handles.filtparams, param_name, val);
+handles.filtparams.(param_name) = val;
+handles.df = create_filter(handles.filtparams);
 
-df = create_filter(handles.filtparams);
-
-handles.Data_filtered = filtfilt(df, handles.Data);
-
-set(handles.plot_data_filtered, 'YData', handles.Data_filtered);
+handles = update_filtered_data(handles);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -155,3 +159,51 @@ else
     % The GUI is no longer waiting, just close it
     delete(hObject);
 end
+
+
+function edit_slice_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_start_slice (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_start_slice as text
+%        str2double(get(hObject,'String')) returns contents of edit_start_slice as a double
+
+% Данные до start_slice секунды удаляем, фильтруем и заполняем первым значением
+% отфильтрованных данных (в функции update_filtered_data)
+% Таким образом избавляемся от шума воспламенителя
+
+tag = get(hObject, 'Tag');
+tokens = regexp(tag,'edit_(\w+)', 'tokens');
+field = tokens{1}{1};
+plot_field = strcat('plot_', field);
+
+val = str2double(hObject.('String'));
+handles.(field) = val;
+
+handles.Data_sliced = handles.Data;
+handles.Data_sliced(handles.t < handles.start_slice | handles.t > handles.stop_slice) = [];
+
+handles.(plot_field).('XData') = [val, val];
+
+handles = update_filtered_data(handles);
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+function handles = update_filtered_data(handles)
+
+handles.Data_filtered = filtfilt(handles.df, handles.Data_sliced);
+
+nan_start_size = length(handles.t(handles.t < handles.start_slice));
+nan_start_array(1:nan_start_size) = handles.Data_filtered(1);
+nan_start_array = nan_start_array';
+
+nan_stop_size = length(handles.t(handles.t > handles.stop_slice));
+nan_stop_array(1:nan_stop_size) = handles.Data_filtered(end);
+nan_stop_array = nan_stop_array';
+
+handles.Data_filtered = [nan_start_array; handles.Data_filtered; nan_stop_array];
+
+handles.plot_data_filtered.('YData') = handles.Data_filtered;
