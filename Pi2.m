@@ -109,23 +109,23 @@ if  ~isequal(filename,0)
     handles.t0 = handles.T(1);
     handles.t1 = handles.T(end);
     
-    handles.L = str2double(get(handles.edit_L, 'String'));
+    handles.L = str2double(handles.edit_L.('String'));
     
     handles.X = handles.X_filth;
     handles.Y = handles.Y_filth;
     handles.P = handles.P_filth;
     
-    handles.shift_X = str2double(get(handles.edit_shiftX, 'String'));
-    handles.shift_Y = str2double(get(handles.edit_shiftY, 'String'));
+    handles.shift_X = str2double(handles.edit_shiftX.('String'));
+    handles.shift_Y = str2double(handles.edit_shiftY.('String'));
     
     handles.multipler = 1e-1;
     
     handles = main_calculate(handles);
     
     % Show results
-    set(handles.text_filename, 'String', filename);
-    set(handles.edit_t1, 'String', handles.t1);
-    set(handles.text_K, 'String', handles.K);
+    handles.text_filename.('String') = filename;
+    handles.edit_t1.('String') = handles.t1;
+    handles.text_K.('String') = handles.K;
     
     axes(handles.axes_XY);
     hold on;
@@ -193,8 +193,7 @@ function button_filter_Callback(hObject, eventdata, handles)
 handles.figure1.('Pointer') = 'watch';
 pause(0.01);
     
-tag = get(hObject, 'Tag');
-
+tag = hObject.('Tag');
 tokens = regexp(tag,'button_filter(\w)', 'tokens');
 field = tokens{1}{1};
 filth_field = strcat(field, '_filth');
@@ -219,7 +218,7 @@ function edit_L_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles.L = str2double(get(hObject, 'String'));
+handles.L = str2double(hObject.('String'));
 handles = update_K(handles);
 
 % Update handles structure
@@ -231,9 +230,9 @@ function edit_t_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-tag = get(hObject, 'Tag');
-val = str2double(get(hObject,'String'));
+val = str2double(hObject.('String'));
 
+tag = hObject.('Tag');
 tokens = regexp(tag,'edit_(t\d)', 'tokens');
 field = tokens{1}{1};
 
@@ -250,9 +249,9 @@ function edit_shift_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-tag = get(hObject, 'Tag');
-val = str2double(get(hObject,'String'));
+val = str2double(hObject.('String'));
 
+tag = hObject.('Tag');
 tokens = regexp(tag,'edit_shift(\w)', 'tokens');
 field = tokens{1}{1};
 field = strcat('shift_', field);
@@ -271,8 +270,7 @@ function button_shift_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-tag = get(hObject, 'Tag');
-
+tag = hObject.('Tag');
 tokens = regexp(tag,'button_(\w+)', 'tokens');
 dir = tokens{1}{1};
 
@@ -350,7 +348,7 @@ function K = K(L, phi0, phi1)
 K = L / abs(phi1 - phi0);
 
 
-function handles_out = main_calculate(handles)
+function handles = main_calculate(handles)
 
 handles.phi = phi(handles.X, handles.Y);
 handles.omega = omega(handles.phi, handles.freq);
@@ -362,10 +360,8 @@ handles.K = K(handles.L, handles.phi(sample0), handles.phi(sample1));
 
 handles.u = u(handles.omega, handles.K);
 
-handles_out = handles;
 
-
-function handles_out = update_XY(handles)
+function handles = update_XY(handles)
 
 X_shifted = handles.X + handles.shift_X;
 Y_shifted = handles.Y + handles.shift_Y;
@@ -388,10 +384,8 @@ handles.plot_u.YData = handles.u;
 
 handles = update_t_plots(handles);
 
-handles_out = handles;
 
-
-function handles_out = update_K(handles)
+function handles = update_K(handles)
 
 % Update data
 sample0 = int64(handles.t0 * handles.freq) + 1;
@@ -407,10 +401,8 @@ handles.plot_u.YData = handles.u;
 
 handles = update_t_plots(handles);
 
-handles_out = handles;
 
-
-function handles_out = update_t_plots(handles)
+function handles = update_t_plots(handles)
 
 plots = {'XY', 'phi', 'P', 'u'};
 
@@ -432,25 +424,19 @@ for name = plots
     handles.(plot1_name) = vline(t1);
 end
 
-handles_out = handles;
 
-
-function handles_out = update_P(handles)
+function handles = update_P(handles)
 
 % Update plots
 handles.plot_P.YData = handles.P;
 
 handles = update_t_plots(handles);
 
-handles_out = handles;
 
-
-function handles_out = update_shift_text(handles)
+function handles = update_shift_text(handles)
 
 handles.edit_shiftX.('String') = handles.shift_X;
 handles.edit_shiftY.('String') = handles.shift_Y;
-
-handles_out = handles;
 
 
 % --- Executes on key press with focus on figure1 or any of its controls.
@@ -474,7 +460,7 @@ if ~isempty(tokens)
 end
 
 
-function handles_out = enable_gui(handles, status)
+function handles = enable_gui(handles, status)
 
 controls = {'edit_L', 'button_filterX', 'button_filterY', 'button_filterP', ...
     'edit_t0', 'edit_t1', 'edit_shiftX', 'edit_shiftY', 'button_up', ...
@@ -485,10 +471,8 @@ for control = controls
     handles.(control).('Enable') = status;
 end
 
-handles_out = handles;
 
-
-function handles_out = clear_workspace(handles)
+function handles = clear_workspace(handles)
 
 names = fieldnames(handles);
 
@@ -499,5 +483,3 @@ for name = names'
         delete(handles.(name));
     end
 end
-
-handles_out = handles;

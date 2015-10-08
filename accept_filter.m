@@ -22,7 +22,7 @@ function varargout = accept_filter(varargin)
 
 % Edit the above text to modify the response to help accept_filter
 
-% Last Modified by GUIDE v2.5 07-Oct-2015 11:10:20
+% Last Modified by GUIDE v2.5 08-Oct-2015 11:29:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,7 +66,10 @@ else
 end
 
 handles.t = [0:length(handles.Data) - 1] ./ handles.filtparams.Fs;
-handles.t_slice = 0;
+handles.start_slice = handles.t(1);
+handles.stop_slice = handles.t(end);
+
+handles.edit_stop_slice.('String') = handles.stop_slice;
 
 handles.Data_sliced = handles.Data;
 
@@ -85,7 +88,8 @@ plot(handles.t, handles.Data);
 handles.plot_data_filtered = plot(handles.t, handles.Data_filtered, 'LineWidth', 1.5);
 legend('Data', 'Filtered data');
 
-handles.plot_t_slice = vline(handles.t_slice);
+handles.plot_start_slice = vline(handles.start_slice);
+handles.plot_stop_slice = vline(handles.stop_slice);
 
 % Choose default command line output for accept_filter
 handles.output = hObject;
@@ -157,24 +161,30 @@ else
 end
 
 
-function edit_t_silce_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_t_silce (see GCBO)
+function edit_slice_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_start_slice (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit_t_silce as text
-%        str2double(get(hObject,'String')) returns contents of edit_t_silce as a double
+% Hints: get(hObject,'String') returns contents of edit_start_slice as text
+%        str2double(get(hObject,'String')) returns contents of edit_start_slice as a double
 
-% Данные до t_slice секунды удаляем, фильтруем и заполняем первым значением
+% Данные до start_slice секунды удаляем, фильтруем и заполняем первым значением
 % отфильтрованных данных (в функции update_filtered_data)
 % Таким образом избавляемся от шума воспламенителя
 
-handles.t_slice = str2double(hObject.('String'));
+tag = get(hObject, 'Tag');
+tokens = regexp(tag,'edit_(\w+)', 'tokens');
+field = tokens{1}{1};
+plot_field = strcat('plot_', field);
+
+val = str2double(hObject.('String'));
+handles.(field) = val;
 
 handles.Data_sliced = handles.Data;
-handles.Data_sliced(handles.t < handles.t_slice) = [];
+handles.Data_sliced(handles.t < handles.start_slice | handles.t > handles.stop_slice) = [];
 
-handles.plot_t_slice.('XData') = [handles.t_slice, handles.t_slice];
+handles.(plot_field).('XData') = [val, val];
 
 handles = update_filtered_data(handles);
 
@@ -186,10 +196,14 @@ function handles = update_filtered_data(handles)
 
 handles.Data_filtered = filtfilt(handles.df, handles.Data_sliced);
 
-nan_size = length(handles.t(handles.t < handles.t_slice));
-nan_array(1:nan_size) = handles.Data_filtered(1);
-nan_array = nan_array';
+nan_start_size = length(handles.t(handles.t < handles.start_slice));
+nan_start_array(1:nan_start_size) = handles.Data_filtered(1);
+nan_start_array = nan_start_array';
 
-handles.Data_filtered = [nan_array; handles.Data_filtered];
+nan_stop_size = length(handles.t(handles.t > handles.stop_slice));
+nan_stop_array(1:nan_stop_size) = handles.Data_filtered(end);
+nan_stop_array = nan_stop_array';
+
+handles.Data_filtered = [nan_start_array; handles.Data_filtered; nan_stop_array];
 
 handles.plot_data_filtered.('YData') = handles.Data_filtered;
