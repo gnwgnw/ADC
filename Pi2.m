@@ -464,7 +464,9 @@ function handles = enable_gui(handles, status)
 
 controls = {'edit_L', 'button_filterX', 'button_filterY', 'button_filterP', ...
     'edit_t0', 'edit_t1', 'edit_shiftX', 'edit_shiftY', 'button_up', ...
-    'button_down', 'button_left', 'button_right', 'button_save'};
+    'button_down', 'button_left', 'button_right', 'button_save', ...
+    'edit_auto_positioning_X', 'edit_auto_positioning_Y', ...
+    'button_auto_positioning_X', 'button_auto_positioning_Y'};
 
 for control = controls
     control = control{1};
@@ -517,10 +519,11 @@ handles.figure1.('Pointer') = 'watch';
 pause(0.01);
 
 eps = 1e-4;
-startX = str2double(handles.edit_auto_positioning_start.('String'));
-stopX = str2double(handles.edit_auto_positioning_stop.('String'));
+radius_X = abs(str2double(handles.edit_auto_positioning_X.('String')));
+min_X = handles.shift_X - radius_X;
+max_X = handles.shift_X + radius_X;
 
-X0 = gss(handles, @f_X0, startX, stopX, eps);
+X0 = gss(@(x) f_X0(handles, x), min_X, max_X, eps);
 
 handles.shift_X = X0;
 
@@ -543,10 +546,11 @@ handles.figure1.('Pointer') = 'watch';
 pause(0.01);
 
 eps = 1e-4;
-startY = str2double(handles.edit_auto_positioning_start.('String'));
-stopY = str2double(handles.edit_auto_positioning_stop.('String'));
+radius_Y = str2double(handles.edit_auto_positioning_Y.('String'));
+min_Y = handles.shift_Y - radius_Y;
+max_Y = handles.shift_Y + radius_Y;
 
-Y0 = gss(handles, @f_Y0, startY, stopY, eps);
+Y0 = gss(@(x) f_Y0(handles, x), min_Y, max_Y, eps);
 
 handles.shift_Y = Y0;
 
