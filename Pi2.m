@@ -22,7 +22,7 @@ function varargout = Pi2(varargin)
 
 % Edit the above text to modify the response to help Pi2
 
-% Last Modified by GUIDE v2.5 08-Oct-2015 13:02:54
+% Last Modified by GUIDE v2.5 08-Oct-2015 19:03:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -458,13 +458,14 @@ if ~isempty(tokens)
         button_shift_Callback(handles.(tag), eventdata, handles);
     end
 end
-
+ 
 
 function handles = enable_gui(handles, status)
 
 controls = {'edit_L', 'button_filterX', 'button_filterY', 'button_filterP', ...
     'edit_t0', 'edit_t1', 'edit_shiftX', 'edit_shiftY', 'button_up', ...
-    'button_down', 'button_left', 'button_right', 'button_save'};
+    'button_down', 'button_left', 'button_right', 'button_save', ...
+    'button_auto_positioning'};
 
 for control = controls
     control = control{1};
@@ -549,6 +550,28 @@ stopY = str2double(handles.edit_auto_positioning_stop.('String'));
 Y0 = gss(handles, @f_Y0, startY, stopY, eps);
 
 handles.shift_Y = Y0;
+
+handles = update_XY(handles);
+handles = update_shift_text(handles);
+
+handles.figure1.('Pointer') = 'arrow';
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes on button press in button_auto_positioning.
+function button_auto_positioning_Callback(hObject, eventdata, handles)
+% hObject    handle to button_auto_positioning (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles.figure1.('Pointer') = 'watch';
+pause(0.01);
+
+C = fminsearch(@(C) max_corr(handles.X, handles.Y, C), [handles.shift_X, handles.shift_Y]);
+handles.shift_X = C(1);
+handles.shift_Y = C(2);
 
 handles = update_XY(handles);
 handles = update_shift_text(handles);
