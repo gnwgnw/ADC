@@ -114,6 +114,7 @@ if  ~isequal(filename,0)
     handles.X = handles.X_filth;
     handles.Y = handles.Y_filth;
     handles.P = handles.P_filth;
+    handles.dP = diff(handles.P) .* handles.freq;
     
     handles.shift_X = str2double(handles.edit_shiftX.('String'));
     handles.shift_Y = str2double(handles.edit_shiftY.('String'));
@@ -165,6 +166,16 @@ if  ~isequal(filename,0)
     handles.plot_t0_P = vline(handles.t0);
     handles.plot_t1_P = vline(handles.t1);
     legend('P');
+
+
+    axes(handles.axes_dP);
+    hold on;
+    grid on;
+
+    handles.plot_dP = plot(handles.T(1:end-1), handles.dP);
+	handles.plot_t0_dP = vline(handles.t0);
+    handles.plot_t1_dP = vline(handles.t1);
+    legend('dP');
 
 
     axes(handles.axes_u);
@@ -404,7 +415,7 @@ handles = update_t_plots(handles);
 
 function handles = update_t_plots(handles)
 
-plots = {'XY', 'phi', 'P', 'u'};
+plots = {'XY', 'phi', 'P', 'u', 'dP'};
 
 t0 = handles.t0;
 t1 = handles.t1;
@@ -429,6 +440,8 @@ function handles = update_P(handles)
 
 % Update plots
 handles.plot_P.YData = handles.P;
+handles.dP = diff(handles.P) .* handles.freq;
+handles.plot_dP.YData = handles.dP;
 
 handles = update_t_plots(handles);
 
