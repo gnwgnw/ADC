@@ -334,8 +334,38 @@ fprintf(fileID, '%8.5f %8.4f %8.4f\n', out);
 
 fclose(fileID);
 
-handles.figure1.('Pointer') = 'arrow';
+%%
+edge = (handles.T > handles.t0 & handles.T < handles.t1);
 
+T = handles.T(edge(1:end-1));
+P = handles.P(edge(1:end-1));
+u = handles.u(edge(1:end-1));
+X = handles.X(edge(1:end-1)) + handles.shift_X;
+Y = handles.Y(edge(1:end-1)) + handles.shift_Y;
+
+%%
+file_path = strcat(handles.dir_path, 'data_slice.txt');
+fileID = fopen(file_path, 'w');
+
+out = [T'; P'; u'];
+
+fprintf(fileID, '%8s %8s %8s\n', 't', 'P', 'u');
+fprintf(fileID, '%8.5f %8.4f %8.4f\n', out);
+
+fclose(fileID);
+
+%%
+file_path = strcat(handles.dir_path, 'data_slice_with_XY.txt');
+fileID = fopen(file_path, 'w');
+
+out = [T'; P'; u'; X'; Y'];
+
+fprintf(fileID, '%8s %8s %8s %8s %8s\n', 't', 'P', 'u', 'X', 'Y');
+fprintf(fileID, '%8.5f %8.4f %8.4f %8.4f %8.4f\n', out);
+
+fclose(fileID);
+
+handles.figure1.('Pointer') = 'arrow';
 
 
 function phi = phi(X, Y)
