@@ -22,7 +22,7 @@ function varargout = Pi2(varargin)
 
 % Edit the above text to modify the response to help Pi2
 
-% Last Modified by GUIDE v2.5 08-Oct-2015 13:02:54
+% Last Modified by GUIDE v2.5 02-Nov-2015 18:35:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -574,3 +574,67 @@ handles.figure1.('Pointer') = 'arrow';
 
 % Update handles structure
 guidata(hObject, handles);
+
+
+
+function edit_S22_X_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_S22_X (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_S22_X as text
+%        str2double(get(hObject,'String')) returns contents of edit_S22_X as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_S22_X_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_S22_X (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_S22_Y_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_S22_Y (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_S22_Y as text
+%        str2double(get(hObject,'String')) returns contents of edit_S22_Y as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_S22_Y_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_S22_Y (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in radiobutton_S11.
+function radiobutton_S11_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton_S11 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton_S11
+
+
+% --- Executes on button press in radiobutton_S22.
+function radiobutton_S22_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton_S22 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton_S22
