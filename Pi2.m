@@ -116,8 +116,10 @@ if  ~isequal(filename,0)
     handles.P = handles.P_filth;
     handles.dP = diff(handles.P) .* handles.freq;
     
-    handles.shift_X = str2double(handles.edit_shiftX.('String'));
-    handles.shift_Y = str2double(handles.edit_shiftY.('String'));
+    handles.S = [
+        complex(0), complex(1, 0);
+        complex(1, 0), complex(0, 0)
+        ];
     
     handles.multipler = 1e-1;
     
