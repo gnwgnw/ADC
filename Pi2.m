@@ -334,7 +334,6 @@ fprintf(fileID, '%8.5f %8.4f %8.4f\n', out);
 
 fclose(fileID);
 
-%%
 edge = (handles.T > handles.t0 & handles.T < handles.t1);
 
 T = handles.T(edge(1:end-1));
@@ -343,7 +342,6 @@ u = handles.u(edge(1:end-1));
 X = handles.X(edge(1:end-1)) + handles.shift_X;
 Y = handles.Y(edge(1:end-1)) + handles.shift_Y;
 
-%%
 file_path = strcat(handles.dir_path, 'data_slice.txt');
 fileID = fopen(file_path, 'w');
 
@@ -354,7 +352,6 @@ fprintf(fileID, '%8.5f %8.4f %8.4f\n', out);
 
 fclose(fileID);
 
-%%
 file_path = strcat(handles.dir_path, 'data_slice_with_XY.txt');
 fileID = fopen(file_path, 'w');
 
