@@ -339,7 +339,6 @@ fclose(fileID);
 handles.figure1.('Pointer') = 'arrow';
 
 
-
 function phi = phi(X, Y)
 
 G = complex(X, Y);
@@ -376,20 +375,22 @@ handles.u = u(handles.omega, handles.K);
 
 function handles = update_XY(handles)
 
-X_shifted = handles.X + handles.shift_X;
-Y_shifted = handles.Y + handles.shift_Y;
+G2 = restore_G2(complex(handles.X, handles.Y), handles.S);
+
+X_restored = real(G2);
+Y_restored = imag(G2);
 
 % Update data
-handles.phi = phi(X_shifted, Y_shifted);
+handles.phi = phi(X_restored, Y_restored);
 handles.omega = omega(handles.phi, handles.freq);
 handles.u = u(handles.omega, handles.K);
 
 % Update plots
-handles.plot_X.YData = X_shifted;
-handles.plot_Y.YData = Y_shifted;
+handles.plot_X.YData = X_restored;
+handles.plot_Y.YData = Y_restored;
 
-handles.plot_G.XData = X_shifted;
-handles.plot_G.YData = Y_shifted;
+handles.plot_G.XData = X_restored;
+handles.plot_G.YData = Y_restored;
 
 handles.plot_phi.YData = handles.phi;
 
@@ -481,7 +482,7 @@ controls = {'edit_L', 'button_filterX', 'button_filterY', 'button_filterP', ...
     'edit_t0', 'edit_t1', 'edit_shiftX', 'edit_shiftY', 'button_up', ...
     'button_down', 'button_left', 'button_right', 'button_save', ...
     'edit_auto_positioning_X', 'edit_auto_positioning_Y', ...
-    'button_auto_positioning_X', 'button_auto_positioning_Y'};
+    'edit_S11_X', 'edit_S11_Y', 'edit_S22_X', 'edit_S22_Y'};
 
 for control = controls
     control = control{1};
@@ -578,65 +579,35 @@ handles.figure1.('Pointer') = 'arrow';
 guidata(hObject, handles);
 
 
-
-function edit_S22_X_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_S22_X (see GCBO)
+function edit_S_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_S (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit_S22_X as text
-%        str2double(get(hObject,'String')) returns contents of edit_S22_X as a double
+val = str2double(hObject.('String'));
 
+tag = hObject.('Tag');
+tokens = regexp(tag,'edit_S(\d)(\d)_(\w)', 'tokens');
 
-% --- Executes during object creation, after setting all properties.
-function edit_S22_X_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit_S22_X (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
+i = tokens{1}{1};
+j = tokens{1}{2};
+component = tokens{1}{3};
 
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
+i = str2double(i);
+j = str2double(j);
 
+handles.S(i, j) = replace_component(handles.S(i, j), val, component);
 
+handles = update_XY(handles);
 
-function edit_S22_Y_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_S22_Y (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit_S22_Y as text
-%        str2double(get(hObject,'String')) returns contents of edit_S22_Y as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit_S22_Y_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit_S22_Y (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
+% Update handles structure
+guidata(hObject, handles);
 
 
 % --- Executes on button press in radiobutton_S11.
-function radiobutton_S11_Callback(hObject, eventdata, handles)
+function radiobutton_S_Callback(hObject, eventdata, handles)
 % hObject    handle to radiobutton_S11 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of radiobutton_S11
-
-
-% --- Executes on button press in radiobutton_S22.
-function radiobutton_S22_Callback(hObject, eventdata, handles)
-% hObject    handle to radiobutton_S22 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of radiobutton_S22
