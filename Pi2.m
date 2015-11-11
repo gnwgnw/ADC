@@ -121,7 +121,8 @@ if  ~isequal(filename,0)
         complex(1, 0), complex(0, 0)
         ];
     
-    handles.multipler = 1e-1;
+    handles.multipler = str2double(handles.uibuttongroup2.SelectedObject.String);
+    handles.component = handles.uibuttongroup5.SelectedObject.String;
     
     handles = main_calculate(handles);
     
@@ -257,26 +258,6 @@ handles = update_K(handles);
 guidata(hObject, handles);
 
 
-function edit_shift_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_shift<> (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-val = str2double(hObject.('String'));
-
-tag = hObject.('Tag');
-tokens = regexp(tag,'edit_shift(\w)', 'tokens');
-field = tokens{1}{1};
-field = strcat('shift_', field);
-
-handles.(field) = val;
-
-handles = update_XY(handles);
-
-% Update handles structure
-guidata(hObject, handles);
-
-
 % --- Executes on button press in shift buttons.
 function button_shift_Callback(hObject, eventdata, handles)
 % hObject    handle to button_right (see GCBO)
@@ -286,6 +267,8 @@ function button_shift_Callback(hObject, eventdata, handles)
 tag = hObject.('Tag');
 tokens = regexp(tag,'button_(\w+)', 'tokens');
 dir = tokens{1}{1};
+
+val = handles.multipler;
 
 switch dir
     case 'up'
@@ -451,8 +434,11 @@ handles = update_t_plots(handles);
 
 function handles = update_shift_text(handles)
 
-handles.edit_shiftX.('String') = handles.shift_X;
-handles.edit_shiftY.('String') = handles.shift_Y;
+handles.edit_S11_X.('String') = real(handles.S(1,1));
+handles.edit_S11_Y.('String') = imag(handles.S(1,1));
+
+handles.edit_S22_X.('String') = real(handles.S(2,2));
+handles.edit_S22_Y.('String') = imag(handles.S(2,2));
 
 
 % --- Executes on key press with focus on figure1 or any of its controls.
@@ -605,9 +591,12 @@ guidata(hObject, handles);
 
 
 % --- Executes on button press in radiobutton_S11.
-function radiobutton_S_Callback(hObject, eventdata, handles)
+function radiobutton_component_Callback(hObject, eventdata, handles)
 % hObject    handle to radiobutton_S11 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of radiobutton_S11
+handles.component = hObject.String;
+
+% Update handles structure
+guidata(hObject, handles);
