@@ -272,13 +272,20 @@ val = handles.multipler;
 
 switch dir
     case 'up'
-        handles.shift_Y = handles.shift_Y + handles.multipler;
+        val = val * 1i;
     case 'down'
-        handles.shift_Y = handles.shift_Y - handles.multipler;
+        val = val * (-1i);
     case 'left'
-        handles.shift_X = handles.shift_X - handles.multipler;
+        val = val * (-1);
     case 'right'
-        handles.shift_X = handles.shift_X + handles.multipler;
+        val = val * 1;
+end
+
+switch handles.component
+    case 'S11'
+        handles.S(1,1) = handles.S(1,1) + val;
+    case 'S22'
+        handles.S(2,2) = handles.S(2,2) + val;
 end
 
 handles = update_XY(handles);
