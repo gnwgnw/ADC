@@ -125,6 +125,7 @@ if  ~isequal(filename,0)
     handles.component = handles.uibuttongroup5.SelectedObject.String;
     
     handles.shift = 0;
+    handles.scale_Y = 1;
 
     handles = main_calculate(handles);
     
@@ -290,6 +291,8 @@ switch handles.component
         handles.S(2,2) = handles.S(2,2) + val;
     case 'Shift'
         handles.shift = real(handles.shift + 0.1 / val);
+    case 'Scale'
+        handles.scale_Y = handles.scale_Y + imag(val);
 end
 
 handles = update_XY(handles);
@@ -370,8 +373,9 @@ handles.u = u(handles.omega, handles.K);
 function handles = update_XY(handles)
 
 X_shifted = shift(handles.X, handles.shift);
+Y_scaled = (handles.Y - imag(handles.S(1,1))) .* handles.scale_Y + imag(handles.S(1,1));
 
-G2 = restore_G2(complex(X_shifted, handles.Y), handles.S);
+G2 = restore_G2(complex(X_shifted, Y_scaled), handles.S);
 
 X_restored = real(G2);
 Y_restored = imag(G2);
