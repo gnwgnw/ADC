@@ -124,6 +124,8 @@ if  ~isequal(filename,0)
     handles.multipler = str2double(handles.uibuttongroup2.SelectedObject.String);
     handles.component = handles.uibuttongroup5.SelectedObject.String;
     
+    handles.shift = 0;
+
     handles = main_calculate(handles);
     
     % Show results
@@ -286,6 +288,8 @@ switch handles.component
         handles.S(1,1) = handles.S(1,1) + val;
     case 'S22'
         handles.S(2,2) = handles.S(2,2) + val;
+    case 'Shift'
+        handles.shift = real(handles.shift + 0.1 / val);
 end
 
 handles = update_XY(handles);
@@ -365,7 +369,9 @@ handles.u = u(handles.omega, handles.K);
 
 function handles = update_XY(handles)
 
-G2 = restore_G2(complex(handles.X, handles.Y), handles.S);
+X_shifted = shift(handles.X, handles.shift);
+
+G2 = restore_G2(complex(X_shifted, handles.Y), handles.S);
 
 X_restored = real(G2);
 Y_restored = imag(G2);
