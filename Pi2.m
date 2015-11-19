@@ -22,7 +22,7 @@ function varargout = Pi2(varargin)
 
 % Edit the above text to modify the response to help Pi2
 
-% Last Modified by GUIDE v2.5 02-Nov-2015 18:35:18
+% Last Modified by GUIDE v2.5 19-Nov-2015 16:07:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -485,7 +485,8 @@ controls = {'edit_L', 'button_filterX', 'button_filterY', 'button_filterP', ...
     'edit_t0', 'edit_t1', 'edit_shiftX', 'edit_shiftY', 'button_up', ...
     'button_down', 'button_left', 'button_right', 'button_save', ...
     'edit_auto_positioning_X', 'edit_auto_positioning_Y', ...
-    'edit_S11_X', 'edit_S11_Y', 'edit_S22_X', 'edit_S22_Y'};
+    'edit_S11_X', 'edit_S11_Y', 'edit_S22_X', 'edit_S22_Y', ...
+    'button_plot_uP'};
 
 for control = controls
     control = control{1};
@@ -617,3 +618,13 @@ handles.component = hObject.String;
 
 % Update handles structure
 guidata(hObject, handles);
+
+
+% --- Executes on button press in button_plot_uP.
+function button_plot_uP_Callback(hObject, eventdata, handles)
+% hObject    handle to button_plot_uP (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+figure(1);
+plot(handles.P(1:end-1), handles.u);
