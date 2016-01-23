@@ -1,5 +1,5 @@
 classdef View_plot < View_base
-    properties (Access = private)
+    properties (Access = protected)
         x_prop_name;
         y_prop_name;
         hline;
