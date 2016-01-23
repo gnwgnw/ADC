@@ -33,6 +33,7 @@ classdef ADC_model < handle
     properties(Dependent, SetObservable)
         dP;
         G;
+        T_diff;
     end
 
     events
@@ -58,6 +59,13 @@ classdef ADC_model < handle
 
         function val = get.G(obj)
             val = complex(obj.X, obj.Y);
+        end
+
+        function obj = set.T_diff(obj,~)
+        end
+
+        function val = get.T_diff(obj)
+            val = obj.T(1:end-1);
         end
 
         function load(obj, filename, pathname)
@@ -133,8 +141,16 @@ classdef ADC_model < handle
             obj.dP = 1;
         end
 
+        function notify_T_diff(obj)
+            obj.T_diff = 1;
+        end
+
         function on_load(obj)
             obj.fill_listeners();
+
+            obj.notify_T_diff();
+            obj.notify_dP();
+
             notify(obj, 'on_filter_XY');
         end
 
