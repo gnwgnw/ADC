@@ -1,4 +1,4 @@
-classdef View_base < handle 
+classdef (Abstract) View_base < handle
     properties
         hobj;
         model;
@@ -9,10 +9,5 @@ classdef View_base < handle
             obj.hobj = hobj;
             obj.model = model;
         end
-    end
-
-    methods (Abstract)
-        enable(obj, status);
-        % status == 'on' | 'off'
     end
 end

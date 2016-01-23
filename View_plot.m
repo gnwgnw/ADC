@@ -15,10 +15,6 @@ classdef View_plot < View_base
             obj.init_plot();
             obj.init_listeners();
         end
-
-        function enable(~, ~)
-            % nothing to do
-        end
     end
 
     methods (Access = private)
