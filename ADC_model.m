@@ -34,6 +34,10 @@ classdef ADC_model < handle
         dP;
         G;
         T_diff;
+        S11_X;
+        S11_Y;
+        S22_X;
+        S22_Y;
     end
 
     events
@@ -43,6 +47,13 @@ classdef ADC_model < handle
     methods
         function obj = ADC_model()
             obj.freq = obj.FREQ / obj.SPREAD;
+            obj.S = [
+                complex(0), complex(1, 0);
+                complex(1, 0), complex(0, 0)
+            ];
+            obj.model_lenght = 38;
+            obj.t_0 = 0;
+            obj.t_1 = 0;
         end
 
         function obj = set.dP(obj,~)
@@ -66,6 +77,38 @@ classdef ADC_model < handle
 
         function val = get.T_diff(obj)
             val = obj.T(1:end-1);
+        end
+
+        function val = get.S11_X(obj)
+            val = real(obj.S(1,1));
+        end
+
+        function val = get.S11_Y(obj)
+            val = imag(obj.S(1,1));
+        end
+
+        function val = get.S22_X(obj)
+            val = real(obj.S(2,2));
+        end
+
+        function val = get.S22_Y(obj)
+            val = imag(obj.S(2,2));
+        end
+
+        function obj = set.S11_X(obj, val)
+            obj.S(1,1) = replace_component(obj.S(1,1), val, 'X');
+        end
+
+        function obj = set.S11_Y(obj, val)
+            obj.S(1,1) = replace_component(obj.S(1,1), val, 'Y');
+        end
+
+        function obj = set.S22_X(obj, val)
+            obj.S(2,2) = replace_component(obj.S(2,2), val, 'X');
+        end
+
+        function obj = set.S22_Y(obj, val)
+            obj.S(2,2) = replace_component(obj.S(2,2), val, 'Y');
         end
 
         function load(obj, filename, pathname)
@@ -163,7 +206,7 @@ classdef ADC_model < handle
             obj.add_listener(addlistener(obj, 'Y_filter', 'PostSet', @obj.listener_filter));
             obj.add_listener(addlistener(obj, 'P_filter', 'PostSet', @obj.listener_filter));
 
-            obj.add_listener(addlistener(obj, 'on_filter_XY', @obj.listener_G));
+            obj.add_listener(addlistener(obj, 'on_filter_XY', @obj.listener_S));
 
             obj.add_listener(addlistener(obj, 'G', 'PostSet', @obj.listener_G));
             obj.add_listener(addlistener(obj, 'P', 'PostSet', @obj.listener_P));
@@ -186,12 +229,6 @@ classdef ADC_model < handle
 
         function reset(obj)
             obj.remove_listeners();
-
-            obj.S = [
-                complex(0), complex(1, 0);
-                complex(1, 0), complex(0, 0)
-            ];
-            obj.model_lenght = 38;
         end
     end
 end
