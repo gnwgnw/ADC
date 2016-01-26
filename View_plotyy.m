@@ -9,8 +9,11 @@ classdef View_plotyy < View_plot
     end
 
     methods
-        function obj = View_plotyy(hobj, model, x1_prop_name, y1_prop_name, x2_prop_name, y2_prop_name)
-            obj@View_plot(hobj, model, x1_prop_name, y1_prop_name);
+        function obj = View_plotyy(hobj, model, xy1_xy2_prop_name)
+            [x1_prop_name, y1_prop_name, x2_prop_name, y2_prop_name] = View_plotyy.split_input(xy1_xy2_prop_name);
+            xy1_prop_name = strcat(x1_prop_name, ', ', y1_prop_name);
+
+            obj@View_plot(hobj, model, xy1_prop_name);
 
             obj.x2_prop_name = x2_prop_name;
             obj.y2_prop_name = y2_prop_name;
@@ -48,6 +51,14 @@ classdef View_plotyy < View_plot
 
             h.YLimMode = 'auto';
             h.YTickMode = 'auto';
+        end
+
+        function [x1, y1, x2, y2] = split_input(str)
+            c = strsplit(str, ', ');
+            x1 = c(1);
+            y1 = c(2);
+            x2 = c(3);
+            y2 = c(4);
         end
     end
 end

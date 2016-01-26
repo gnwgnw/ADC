@@ -6,7 +6,9 @@ classdef View_plot < View_base
     end
 
     methods
-        function obj = View_plot(hobj, model, x_prop_name, y_prop_name)
+        function obj = View_plot(hobj, model, xy_prop_name)
+            [x_prop_name, y_prop_name] = View_plot.split_input(xy_prop_name);
+
             obj@View_base(hobj, model);
 
             obj.x_prop_name = x_prop_name;
@@ -34,6 +36,14 @@ classdef View_plot < View_base
 
         function on_y_change(obj, ~, ~)
             obj.hline.YData = obj.model.(obj.y_prop_name);
+        end
+    end
+
+    methods (Static)
+        function [x, y] = split_input(str)
+            c = strsplit(str, ', ');
+            x = c(1);
+            y = c(2);
         end
     end
 end
