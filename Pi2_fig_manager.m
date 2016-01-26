@@ -2,10 +2,12 @@ classdef Pi2_fig_manager < handle
     properties (Access = private)
         model;
         fig;
+
         views;
-        control;
+        controls;
 
         load_button;
+        filter_buttons;
     end
 
     properties (Access = private, Constant)
@@ -29,6 +31,14 @@ classdef Pi2_fig_manager < handle
             {'edit_S22_X', 'Control_edit', 'S22_X'}
             {'edit_S22_Y', 'Control_edit', 'S22_Y'}
         };
+
+        load_button_tag = 'button_load';
+
+        filter_buttons_tag = {
+            'button_filter_X'
+            'button_filter_Y'
+            'button_filter_P'
+        };
     end
 
     methods
@@ -42,6 +52,7 @@ classdef Pi2_fig_manager < handle
             cellfun(@obj.add_control, obj.control_adapter);
 
             obj.init_load_button();
+            obj.init_filter_buttons();
         end
     end
 
@@ -55,17 +66,34 @@ classdef Pi2_fig_manager < handle
         function add_control(obj, adapter)
             h = findobj(obj.fig, 'Tag', adapter{1});
             v = feval(adapter{2}, h, obj.model, adapter{3});
-            obj.control{end + 1} = v;
+            obj.controls{end + 1} = v;
+        end
+
+        function add_filter_button(obj, tag)
+            h = findobj(obj.fig, 'Tag', tag);
+            h.Callback = @obj.on_filter_callback;
+            obj.filter_buttons{end + 1} = h;
         end
 
         function init_load_button(obj)
-            obj.load_button = findobj(obj.fig, 'Tag', 'button_load');
+            obj.load_button = findobj(obj.fig, 'Tag', obj.load_button_tag);
             obj.load_button.Callback = @obj.on_load_callback;
+        end
+
+        function init_filter_buttons(obj)
+            cellfun(@obj.add_filter_button, obj.filter_buttons_tag);
         end
 
         function on_load_callback(obj, ~, ~)
             [filename, pathname] = uigetfile('out.txt', 'Select a data file');
             obj.model.load(filename, pathname);
+        end
+
+        function on_filter_callback(obj, ui_handle, ~)
+            component_name = strrep(ui_handle.Tag, 'button_filter_', '');
+            component_name_filter = [component_name '_filter'];
+
+            obj.model.(component_name_filter) = accept_filter(obj.model.(component_name), obj.model.freq);
         end
     end
 end

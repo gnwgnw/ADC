@@ -5,11 +5,12 @@ classdef ADC_model < handle
     end
 
     properties(Access = private)
-        freq;
         listeners;
     end
 
     properties (SetObservable)
+        freq;
+
         dir_path;
 
         X, X_filth, X_filter;
