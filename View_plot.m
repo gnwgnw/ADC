@@ -23,6 +23,7 @@ classdef View_plot < View_base
         function init_plot(obj)
             axes(obj.hobj);
             hold on;
+            grid on;
             obj.hline = plot(0, 0);
         end
 
