@@ -9,7 +9,7 @@ classdef Control_edit < Control_base
 
             obj.listen_prop_name = prop_name;
 
-            obj.hobj.String = num2str(obj.model.(obj.listen_prop_name));
+            obj.set_data_to_text();
 
             obj.init_listeners();
             obj.init_callbacks();
@@ -26,7 +26,7 @@ classdef Control_edit < Control_base
         end
 
         function on_change(obj, ~, ~)
-            obj.hobj.String = obj.model.(obj.listen_prop_name);
+            obj.set_data_to_text();
         end
 
         function init_callbacks(obj)
@@ -36,6 +36,10 @@ classdef Control_edit < Control_base
         function callback(obj,~,~)
             val = str2double(obj.hobj.String);
             obj.model.(obj.listen_prop_name) = val;
+        end
+
+        function set_data_to_text(obj)
+            obj.hobj.String = obj.model.(obj.listen_prop_name);
         end
     end
 end
