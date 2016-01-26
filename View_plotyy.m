@@ -11,7 +11,7 @@ classdef View_plotyy < View_plot
     methods
         function obj = View_plotyy(hobj, model, xy1_xy2_prop_name)
             [x1_prop_name, y1_prop_name, x2_prop_name, y2_prop_name] = View_plotyy.split_input(xy1_xy2_prop_name);
-            xy1_prop_name = strcat(x1_prop_name, ', ', y1_prop_name);
+            xy1_prop_name = [x1_prop_name, ', ', y1_prop_name];
 
             obj@View_plot(hobj, model, xy1_prop_name);
 
@@ -26,6 +26,7 @@ classdef View_plotyy < View_plot
     methods (Access = private)
         function init_plot(obj)
             axes(obj.hobj);
+            hold on;
             [obj.haxes, obj.hline, obj.hline2] = plotyy(0, 0, 0, 0);
 
             arrayfun(@View_plotyy.setup_axes, obj.haxes);
@@ -55,10 +56,10 @@ classdef View_plotyy < View_plot
 
         function [x1, y1, x2, y2] = split_input(str)
             c = strsplit(str, ', ');
-            x1 = c(1);
-            y1 = c(2);
-            x2 = c(3);
-            y2 = c(4);
+            x1 = c{1};
+            y1 = c{2};
+            x2 = c{3};
+            y2 = c{4};
         end
     end
 end

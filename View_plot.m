@@ -22,7 +22,8 @@ classdef View_plot < View_base
     methods (Access = private)
         function init_plot(obj)
             axes(obj.hobj);
-            obj.hline = plot(0,0);
+            hold on;
+            obj.hline = plot(0, 0);
         end
 
         function init_listeners(obj)
@@ -42,8 +43,8 @@ classdef View_plot < View_base
     methods (Static)
         function [x, y] = split_input(str)
             c = strsplit(str, ', ');
-            x = c(1);
-            y = c(2);
+            x = c{1};
+            y = c{2};
         end
     end
 end
