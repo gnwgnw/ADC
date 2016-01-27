@@ -22,7 +22,7 @@ function varargout = Pi2(varargin)
 
 % Edit the above text to modify the response to help Pi2
 
-% Last Modified by GUIDE v2.5 08-Oct-2015 19:03:50
+% Last Modified by GUIDE v2.5 02-Nov-2015 18:35:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -114,12 +114,18 @@ if  ~isequal(filename,0)
     handles.X = handles.X_filth;
     handles.Y = handles.Y_filth;
     handles.P = handles.P_filth;
+    handles.dP = diff(handles.P) .* handles.freq;
     
-    handles.shift_X = str2double(handles.edit_shiftX.('String'));
-    handles.shift_Y = str2double(handles.edit_shiftY.('String'));
+    handles.S = [
+        complex(0), complex(1, 0);
+        complex(1, 0), complex(0, 0)
+        ];
     
-    handles.multipler = 1e-1;
+    handles.multipler = str2double(handles.uibuttongroup2.SelectedObject.String);
+    handles.component = handles.uibuttongroup5.SelectedObject.String;
     
+    handles.shift = 0;
+
     handles = main_calculate(handles);
     
     % Show results
@@ -165,6 +171,16 @@ if  ~isequal(filename,0)
     handles.plot_t0_P = vline(handles.t0);
     handles.plot_t1_P = vline(handles.t1);
     legend('P');
+
+
+    axes(handles.axes_dP);
+    hold on;
+    grid on;
+
+    handles.plot_dP = plot(handles.T(1:end-1), handles.dP);
+	handles.plot_t0_dP = vline(handles.t0);
+    handles.plot_t1_dP = vline(handles.t1);
+    legend('dP');
 
 
     axes(handles.axes_u);
@@ -244,26 +260,6 @@ handles = update_K(handles);
 guidata(hObject, handles);
 
 
-function edit_shift_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_shift<> (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-val = str2double(hObject.('String'));
-
-tag = hObject.('Tag');
-tokens = regexp(tag,'edit_shift(\w)', 'tokens');
-field = tokens{1}{1};
-field = strcat('shift_', field);
-
-handles.(field) = val;
-
-handles = update_XY(handles);
-
-% Update handles structure
-guidata(hObject, handles);
-
-
 % --- Executes on button press in shift buttons.
 function button_shift_Callback(hObject, eventdata, handles)
 % hObject    handle to button_right (see GCBO)
@@ -274,15 +270,26 @@ tag = hObject.('Tag');
 tokens = regexp(tag,'button_(\w+)', 'tokens');
 dir = tokens{1}{1};
 
+val = handles.multipler;
+
 switch dir
     case 'up'
-        handles.shift_Y = handles.shift_Y + handles.multipler;
+        val = val * 1i;
     case 'down'
-        handles.shift_Y = handles.shift_Y - handles.multipler;
+        val = val * (-1i);
     case 'left'
-        handles.shift_X = handles.shift_X - handles.multipler;
+        val = val * (-1);
     case 'right'
-        handles.shift_X = handles.shift_X + handles.multipler;
+        val = val * 1;
+end
+
+switch handles.component
+    case 'S11'
+        handles.S(1,1) = handles.S(1,1) + val;
+    case 'S22'
+        handles.S(2,2) = handles.S(2,2) + val;
+    case 'Shift'
+        handles.shift = real(handles.shift + 0.1 / val);
 end
 
 handles = update_XY(handles);
@@ -326,7 +333,6 @@ fclose(fileID);
 handles.figure1.('Pointer') = 'arrow';
 
 
-
 function phi = phi(X, Y)
 
 G = complex(X, Y);
@@ -363,20 +369,24 @@ handles.u = u(handles.omega, handles.K);
 
 function handles = update_XY(handles)
 
-X_shifted = handles.X + handles.shift_X;
-Y_shifted = handles.Y + handles.shift_Y;
+X_shifted = shift(handles.X, handles.shift);
+
+G2 = restore_G2(complex(X_shifted, handles.Y), handles.S);
+
+X_restored = real(G2);
+Y_restored = imag(G2);
 
 % Update data
-handles.phi = phi(X_shifted, Y_shifted);
+handles.phi = phi(X_restored, Y_restored);
 handles.omega = omega(handles.phi, handles.freq);
 handles.u = u(handles.omega, handles.K);
 
 % Update plots
-handles.plot_X.YData = X_shifted;
-handles.plot_Y.YData = Y_shifted;
+handles.plot_X.YData = X_restored;
+handles.plot_Y.YData = Y_restored;
 
-handles.plot_G.XData = X_shifted;
-handles.plot_G.YData = Y_shifted;
+handles.plot_G.XData = X_restored;
+handles.plot_G.YData = Y_restored;
 
 handles.plot_phi.YData = handles.phi;
 
@@ -404,7 +414,7 @@ handles = update_t_plots(handles);
 
 function handles = update_t_plots(handles)
 
-plots = {'XY', 'phi', 'P', 'u'};
+plots = {'XY', 'phi', 'P', 'u', 'dP'};
 
 t0 = handles.t0;
 t1 = handles.t1;
@@ -429,14 +439,19 @@ function handles = update_P(handles)
 
 % Update plots
 handles.plot_P.YData = handles.P;
+handles.dP = diff(handles.P) .* handles.freq;
+handles.plot_dP.YData = handles.dP;
 
 handles = update_t_plots(handles);
 
 
 function handles = update_shift_text(handles)
 
-handles.edit_shiftX.('String') = handles.shift_X;
-handles.edit_shiftY.('String') = handles.shift_Y;
+handles.edit_S11_X.('String') = real(handles.S(1,1));
+handles.edit_S11_Y.('String') = imag(handles.S(1,1));
+
+handles.edit_S22_X.('String') = real(handles.S(2,2));
+handles.edit_S22_Y.('String') = imag(handles.S(2,2));
 
 
 % --- Executes on key press with focus on figure1 or any of its controls.
@@ -458,14 +473,15 @@ if ~isempty(tokens)
         button_shift_Callback(handles.(tag), eventdata, handles);
     end
 end
- 
+
 
 function handles = enable_gui(handles, status)
 
 controls = {'edit_L', 'button_filterX', 'button_filterY', 'button_filterP', ...
     'edit_t0', 'edit_t1', 'edit_shiftX', 'edit_shiftY', 'button_up', ...
     'button_down', 'button_left', 'button_right', 'button_save', ...
-    'button_auto_positioning'};
+    'edit_auto_positioning_X', 'edit_auto_positioning_Y', ...
+    'edit_S11_X', 'edit_S11_Y', 'edit_S22_X', 'edit_S22_Y'};
 
 for control = controls
     control = control{1};
@@ -518,10 +534,11 @@ handles.figure1.('Pointer') = 'watch';
 pause(0.01);
 
 eps = 1e-4;
-startX = str2double(handles.edit_auto_positioning_start.('String'));
-stopX = str2double(handles.edit_auto_positioning_stop.('String'));
+radius_X = abs(str2double(handles.edit_auto_positioning_X.('String')));
+min_X = handles.shift_X - radius_X;
+max_X = handles.shift_X + radius_X;
 
-X0 = gss(handles, @f_X0, startX, stopX, eps);
+X0 = gss(@(x) f_X0(handles, x), min_X, max_X, eps);
 
 handles.shift_X = X0;
 
@@ -544,10 +561,11 @@ handles.figure1.('Pointer') = 'watch';
 pause(0.01);
 
 eps = 1e-4;
-startY = str2double(handles.edit_auto_positioning_start.('String'));
-stopY = str2double(handles.edit_auto_positioning_stop.('String'));
+radius_Y = str2double(handles.edit_auto_positioning_Y.('String'));
+min_Y = handles.shift_Y - radius_Y;
+max_Y = handles.shift_Y + radius_Y;
 
-Y0 = gss(handles, @f_Y0, startY, stopY, eps);
+Y0 = gss(@(x) f_Y0(handles, x), min_Y, max_Y, eps);
 
 handles.shift_Y = Y0;
 
@@ -560,23 +578,38 @@ handles.figure1.('Pointer') = 'arrow';
 guidata(hObject, handles);
 
 
-% --- Executes on button press in button_auto_positioning.
-function button_auto_positioning_Callback(hObject, eventdata, handles)
-% hObject    handle to button_auto_positioning (see GCBO)
+function edit_S_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_S (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles.figure1.('Pointer') = 'watch';
-pause(0.01);
+val = str2double(hObject.('String'));
 
-C = fminsearch(@(C) max_corr(handles.X, handles.Y, C), [handles.shift_X, handles.shift_Y]);
-handles.shift_X = C(1);
-handles.shift_Y = C(2);
+tag = hObject.('Tag');
+tokens = regexp(tag,'edit_S(\d)(\d)_(\w)', 'tokens');
+
+i = tokens{1}{1};
+j = tokens{1}{2};
+component = tokens{1}{3};
+
+i = str2double(i);
+j = str2double(j);
+
+handles.S(i, j) = replace_component(handles.S(i, j), val, component);
 
 handles = update_XY(handles);
-handles = update_shift_text(handles);
 
-handles.figure1.('Pointer') = 'arrow';
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes on button press in radiobutton_S11.
+function radiobutton_component_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton_S11 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles.component = hObject.String;
 
 % Update handles structure
 guidata(hObject, handles);
