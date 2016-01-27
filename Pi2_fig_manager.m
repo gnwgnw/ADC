@@ -62,6 +62,8 @@ classdef Pi2_fig_manager < handle
             obj.init_load_button();
             obj.init_filter_buttons();
             obj.init_shift_buttons();
+
+            obj.enable_control('off');
         end
     end
 
@@ -106,6 +108,8 @@ classdef Pi2_fig_manager < handle
         function on_load_callback(obj, ~, ~)
             [filename, pathname] = uigetfile('out.txt', 'Select a data file');
             obj.model.load(filename, pathname);
+
+            obj.enable_control('on');
         end
 
         function on_filter_callback(obj, ui_handle, ~)
@@ -147,6 +151,15 @@ classdef Pi2_fig_manager < handle
                     component = [component, '_', b];
                     obj.model.(component) = obj.model.(component) + a * multipler;
             end
+        end
+
+        function enable_control(obj, status)
+            f = @(e) e.enable(status);
+            c = @(e) set(e, 'enable', status);
+
+            cellfun(f, obj.controls);
+            cellfun(c, obj.filter_buttons);
+            cellfun(c, obj.shift_buttons);
         end
     end
 end
