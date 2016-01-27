@@ -8,6 +8,7 @@ classdef Pi2_fig_manager < handle
 
         load_button;
         filter_buttons;
+        shift_buttons;
     end
 
     properties (Access = private, Constant)
@@ -39,6 +40,13 @@ classdef Pi2_fig_manager < handle
             'button_filter_Y'
             'button_filter_P'
         };
+
+        shift_buttons_tag = {
+            'button_up'
+            'button_down'
+            'button_left'
+            'button_right'
+        };
     end
 
     methods
@@ -53,6 +61,7 @@ classdef Pi2_fig_manager < handle
 
             obj.init_load_button();
             obj.init_filter_buttons();
+            obj.init_shift_buttons();
         end
     end
 
@@ -75,6 +84,12 @@ classdef Pi2_fig_manager < handle
             obj.filter_buttons{end + 1} = h;
         end
 
+        function add_shift_button(obj, tag)
+            h = findobj(obj.fig, 'Tag', tag);
+            h.Callback = @obj.on_shift_callback;
+            obj.shift_buttons{end + 1} = h;
+        end
+
         function init_load_button(obj)
             obj.load_button = findobj(obj.fig, 'Tag', obj.load_button_tag);
             obj.load_button.Callback = @obj.on_load_callback;
@@ -82,6 +97,10 @@ classdef Pi2_fig_manager < handle
 
         function init_filter_buttons(obj)
             cellfun(@obj.add_filter_button, obj.filter_buttons_tag);
+        end
+
+        function init_shift_buttons(obj)
+            cellfun(@obj.add_shift_button, obj.shift_buttons_tag);
         end
 
         function on_load_callback(obj, ~, ~)
@@ -94,6 +113,40 @@ classdef Pi2_fig_manager < handle
             component_name_filter = [component_name '_filter'];
 
             obj.model.(component_name_filter) = accept_filter(obj.model.(component_name), obj.model.freq);
+        end
+
+        function on_shift_callback(obj, ui_handle, ~)
+            dir = strrep(ui_handle.Tag, 'button_', '');
+            obj.shift(dir);
+        end
+
+        function shift(obj, dir)
+            h = findobj(obj.fig, 'Tag', 'button_group_component');
+            component = h.SelectedObject.String;
+            h = findobj(obj.fig, 'Tag', 'edit_multipler');
+            multipler = str2double(h.String);
+
+            switch component
+                case 'Scale Y'
+                    % TODO
+                case {'S11' 'S22'}
+                    switch dir
+                        case 'up'
+                            a = 1;
+                            b = 'Y';
+                        case 'down'
+                            a = -1;
+                            b = 'Y';
+                        case 'left'
+                            a = -1;
+                            b = 'X';
+                        case 'right'
+                            a = 1;
+                            b = 'X';
+                    end
+                    component = [component, '_', b];
+                    obj.model.(component) = obj.model.(component) + a * multipler;
+            end
         end
     end
 end

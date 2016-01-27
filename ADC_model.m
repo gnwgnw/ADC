@@ -35,6 +35,7 @@ classdef ADC_model < handle
         dP;
         G;
         T_diff;
+
         S11_X;
         S11_Y;
         S22_X;
@@ -52,9 +53,8 @@ classdef ADC_model < handle
                 complex(0), complex(1, 0);
                 complex(1, 0), complex(0, 0)
             ];
-            obj.model_lenght = 38;
-            obj.t_0 = 0;
-            obj.t_1 = 0;
+
+            obj.reset();
         end
 
         function obj = set.dP(obj,~)
@@ -230,6 +230,16 @@ classdef ADC_model < handle
 
         function reset(obj)
             obj.remove_listeners();
+
+            obj.S11_X = 0;
+            obj.S11_Y = 0;
+            obj.S22_X = 0;
+            obj.S22_Y = 0;
+
+            obj.model_lenght = 38;
+
+            obj.t_0 = 0;
+            obj.t_1 = 0;
         end
     end
 end
