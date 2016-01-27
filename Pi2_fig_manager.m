@@ -115,8 +115,9 @@ classdef Pi2_fig_manager < handle
         function on_filter_callback(obj, ui_handle, ~)
             component_name = strrep(ui_handle.Tag, 'button_filter_', '');
             component_name_filter = [component_name '_filter'];
+            component_name_filth = [component_name '_filth'];
 
-            obj.model.(component_name_filter) = accept_filter(obj.model.(component_name), obj.model.freq);
+            obj.model.(component_name_filter) = accept_filter(obj.model.(component_name_filth), obj.model.freq);
         end
 
         function on_shift_callback(obj, ui_handle, ~)
