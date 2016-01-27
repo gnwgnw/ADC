@@ -63,6 +63,8 @@ classdef Pi2_fig_manager < handle
             obj.init_filter_buttons();
             obj.init_shift_buttons();
 
+            obj.equal_axis_G();
+
             obj.enable_control('off');
         end
     end
@@ -176,6 +178,12 @@ classdef Pi2_fig_manager < handle
                 case 'off'
                     obj.fig.WindowKeyPressFcn = [];
             end
+        end
+
+        function equal_axis_G(obj)
+            h = obj.fig.findobj('Tag', 'axes_G');
+            axes(h);
+            axis equal;
         end
     end
 end
