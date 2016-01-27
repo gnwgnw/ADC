@@ -125,6 +125,14 @@ classdef Pi2_fig_manager < handle
             obj.shift(dir);
         end
 
+        function on_keyevent(obj, ~, event)
+            res = regexp(event.Key,'(\w+)arrow','match');
+            if ~isempty(res)
+                dir = strrep(event.Key, 'arrow', '');
+                obj.shift(dir);
+            end
+        end
+
         function shift(obj, dir)
             h = findobj(obj.fig, 'Tag', 'button_group_component');
             component = h.SelectedObject.String;
@@ -161,6 +169,13 @@ classdef Pi2_fig_manager < handle
             cellfun(f, obj.controls);
             cellfun(c, obj.filter_buttons);
             cellfun(c, obj.shift_buttons);
+
+            switch status
+                case 'on'
+                    obj.fig.WindowKeyPressFcn = @obj.on_keyevent;
+                case 'off'
+                    obj.fig.WindowKeyPressFcn = [];
+            end
         end
     end
 end
