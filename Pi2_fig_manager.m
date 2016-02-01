@@ -7,6 +7,7 @@ classdef Pi2_fig_manager < handle
         controls;
 
         load_button;
+        save_button;
         filter_buttons;
         shift_buttons;
     end
@@ -34,6 +35,7 @@ classdef Pi2_fig_manager < handle
         };
 
         load_button_tag = 'button_load';
+        save_button_tag = 'button_save';
 
         filter_buttons_tag = {
             'button_filter_X'
@@ -60,6 +62,7 @@ classdef Pi2_fig_manager < handle
             cellfun(@obj.add_control, obj.control_adapter);
 
             obj.init_load_button();
+            obj.init_save_button();
             obj.init_filter_buttons();
             obj.init_shift_buttons();
 
@@ -99,6 +102,11 @@ classdef Pi2_fig_manager < handle
             obj.load_button.Callback = @obj.on_load_callback;
         end
 
+        function init_save_button(obj)
+            obj.save_button = findobj(obj.fig, 'Tag', obj.save_button_tag);
+            obj.save_button.Callback = @obj.on_save_callback;
+        end
+
         function init_filter_buttons(obj)
             cellfun(@obj.add_filter_button, obj.filter_buttons_tag);
         end
@@ -112,6 +120,10 @@ classdef Pi2_fig_manager < handle
             obj.model.load(filename, pathname);
 
             obj.enable_control('on');
+        end
+
+        function on_save_callback(obj, ~, ~)
+            obj.model.save();
         end
 
         function on_filter_callback(obj, ui_handle, ~)
@@ -171,6 +183,8 @@ classdef Pi2_fig_manager < handle
             cellfun(f, obj.controls);
             cellfun(c, obj.filter_buttons);
             cellfun(c, obj.shift_buttons);
+
+            obj.save_button.Enable = status;
 
             switch status
                 case 'on'

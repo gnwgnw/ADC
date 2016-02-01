@@ -138,6 +138,18 @@ classdef ADC_model < handle
 
             obj.on_load();
         end
+
+        function save(obj)
+            file_path = strcat(obj.dir_path, 'data.txt');
+            fileID = fopen(file_path, 'w');
+
+            out = [obj.T(1:end-1)'; obj.P(1:end-1)'; obj.u'];
+
+            fprintf(fileID, '%8s %8s %8s\n', 't', 'P', 'u');
+            fprintf(fileID, '%8.5f %8.5f %8.5f\n', out);
+
+            fclose(fileID);
+        end
     end
 
     methods(Access = private)
