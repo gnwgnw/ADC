@@ -29,6 +29,10 @@ classdef ADC_model < handle
         u;
 
         K_phi;
+
+        peaks_limit_from;
+        peaks_limit_to;
+        flag_auto_S11;
     end
 
     properties(Dependent, SetObservable)
@@ -252,6 +256,10 @@ classdef ADC_model < handle
 
             obj.t_0 = 0;
             obj.t_1 = 0;
+        end
+
+        function find_S11(obj)
+
         end
     end
 end
