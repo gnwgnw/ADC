@@ -32,7 +32,6 @@ classdef ADC_model < handle
 
         peaks_limit_from;
         peaks_limit_to;
-        flag_auto_S11;
     end
 
     properties(Dependent, SetObservable)
@@ -154,6 +153,17 @@ classdef ADC_model < handle
 
             fclose(fileID);
         end
+
+        function find_S11(obj)
+            from = double(int64(obj.peaks_limit_from * obj.freq) + 1);
+            to = double(int64(obj.peaks_limit_to * obj.freq) + 1);
+
+            [~, x_peak] = findpeaks(obj.X(from:to), from:to, 'SortStr','descend','NPeaks',1);
+            obj.S11_Y = obj.S11_Y + obj.Y(x_peak);
+
+            [~, x_peak] = findpeaks(obj.Y(from:to), from:to, 'SortStr','descend','NPeaks',1);
+            obj.S11_X = obj.S11_X + obj.X(x_peak);
+        end
     end
 
     methods(Access = private)
@@ -256,10 +266,9 @@ classdef ADC_model < handle
 
             obj.t_0 = 0;
             obj.t_1 = 0;
-        end
 
-        function find_S11(obj)
-
+            obj.peaks_limit_from = 0;
+            obj.peaks_limit_to = 0;
         end
     end
 end

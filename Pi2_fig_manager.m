@@ -32,6 +32,8 @@ classdef Pi2_fig_manager < handle
             {'edit_S11_Y', 'Control_edit', 'S11_Y'}
             {'edit_S22_X', 'Control_edit', 'S22_X'}
             {'edit_S22_Y', 'Control_edit', 'S22_Y'}
+            {'edit_peaks_limit_from', 'Control_edit', 'peaks_limit_from'}
+            {'edit_peaks_limit_to', 'Control_edit', 'peaks_limit_to'}
         };
 
         load_button_tag = 'button_load';
