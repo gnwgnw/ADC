@@ -6,10 +6,7 @@ classdef Pi2_fig_manager < handle
         views;
         controls;
 
-        load_button;
-        save_button;
-        filter_buttons;
-        shift_buttons;
+        class_name;
     end
 
     properties (Access = private, Constant)
@@ -36,20 +33,17 @@ classdef Pi2_fig_manager < handle
             {'edit_peaks_limit_to', 'Control_edit', 'peaks_limit_to'}
         };
 
-        load_button_tag = 'button_load';
-        save_button_tag = 'button_save';
-
-        filter_buttons_tag = {
-            'button_filter_X'
-            'button_filter_Y'
-            'button_filter_P'
-        };
-
-        shift_buttons_tag = {
-            'button_up'
-            'button_down'
-            'button_left'
-            'button_right'
+        button_adapter = {
+            {'button_load', 'Control_button', 'on_load_callback'}
+            {'button_save', 'Control_button', 'on_save_callback'}
+            {'button_filter_X', 'Control_button', 'on_filter_callback'}
+            {'button_filter_Y', 'Control_button', 'on_filter_callback'}
+            {'button_filter_P', 'Control_button', 'on_filter_callback'}
+            {'button_up', 'Control_button', 'on_shift_callback'}
+            {'button_down', 'Control_button', 'on_shift_callback'}
+            {'button_left', 'Control_button', 'on_shift_callback'}
+            {'button_right', 'Control_button', 'on_shift_callback'}
+            {'button_find_S11', 'Control_button', 'on_find_S11_callback'}
         };
     end
 
@@ -60,70 +54,27 @@ classdef Pi2_fig_manager < handle
 
             obj.model = ADC_model;
 
+            meta = metaclass(obj);
+            obj.class_name = meta.Name;
+
             cellfun(@obj.add_view, obj.views_adapter);
             cellfun(@obj.add_control, obj.control_adapter);
-
-            obj.init_load_button();
-            obj.init_save_button();
-            obj.init_filter_buttons();
-            obj.init_shift_buttons();
+            cellfun(@obj.add_button, obj.button_adapter);
 
             obj.equal_axis_G();
 
             obj.enable_control('off');
+            obj.enable_button_load();
         end
     end
 
     methods (Access = private)
-        function add_view(obj, adapter)
-            h = findobj(obj.fig, 'Tag', adapter{1});
-            v = feval(adapter{2}, h, obj.model, adapter{3});
-            obj.views{end + 1} = v;
-        end
-
-        function add_control(obj, adapter)
-            h = findobj(obj.fig, 'Tag', adapter{1});
-            v = feval(adapter{2}, h, obj.model, adapter{3});
-            obj.controls{end + 1} = v;
-        end
-
-        function add_filter_button(obj, tag)
-            h = findobj(obj.fig, 'Tag', tag);
-            h.Callback = @obj.on_filter_callback;
-            obj.filter_buttons{end + 1} = h;
-        end
-
-        function add_shift_button(obj, tag)
-            h = findobj(obj.fig, 'Tag', tag);
-            h.Callback = @obj.on_shift_callback;
-            obj.shift_buttons{end + 1} = h;
-        end
-
-        function init_load_button(obj)
-            obj.load_button = findobj(obj.fig, 'Tag', obj.load_button_tag);
-            obj.load_button.Callback = @obj.on_load_callback;
-        end
-
-        function init_save_button(obj)
-            obj.save_button = findobj(obj.fig, 'Tag', obj.save_button_tag);
-            obj.save_button.Callback = @obj.on_save_callback;
-        end
-
-        function init_filter_buttons(obj)
-            cellfun(@obj.add_filter_button, obj.filter_buttons_tag);
-        end
-
-        function init_shift_buttons(obj)
-            cellfun(@obj.add_shift_button, obj.shift_buttons_tag);
-        end
-
         function on_load_callback(obj, ~, ~)
             [filename, pathname] = uigetfile('out.txt', 'Select a data file');
             obj.model.load(filename, pathname);
 
             obj.enable_control('on');
         end
-
         function on_save_callback(obj, ~, ~)
             obj.model.save();
         end
@@ -141,12 +92,40 @@ classdef Pi2_fig_manager < handle
             obj.shift(dir);
         end
 
+        function on_find_S11_callback(obj, ~, ~)
+            obj.model.find_S11();
+        end
+
         function on_keyevent(obj, ~, event)
             res = regexp(event.Key,'(\w+)arrow','match');
             if ~isempty(res)
                 dir = strrep(event.Key, 'arrow', '');
                 obj.shift(dir);
             end
+        end
+    end
+
+    methods (Access = private)
+        function add_view(obj, adapter)
+            h = findobj(obj.fig, 'Tag', adapter{1});
+            v = feval(adapter{2}, h, obj.model, adapter{3});
+            obj.views{end + 1} = v;
+        end
+
+        function add_control(obj, adapter)
+            h = findobj(obj.fig, 'Tag', adapter{1});
+            v = feval(adapter{2}, h, obj.model, adapter{3});
+            obj.controls{end + 1} = v;
+        end
+
+        function add_button(obj, adapter)
+            h = findobj(obj.fig, 'Tag', adapter{1});
+
+            callback = [obj.class_name '.' adapter{3}];
+            callback = str2func(callback);
+
+            v = feval(adapter{2}, h, obj.model, @(ui,data) callback(obj,ui,data));
+            obj.controls{end + 1} = v;
         end
 
         function shift(obj, dir)
@@ -180,13 +159,8 @@ classdef Pi2_fig_manager < handle
 
         function enable_control(obj, status)
             f = @(e) e.enable(status);
-            c = @(e) set(e, 'enable', status);
 
             cellfun(f, obj.controls);
-            cellfun(c, obj.filter_buttons);
-            cellfun(c, obj.shift_buttons);
-
-            obj.save_button.Enable = status;
 
             switch status
                 case 'on'
@@ -200,6 +174,11 @@ classdef Pi2_fig_manager < handle
             h = obj.fig.findobj('Tag', 'axes_G');
             axes(h);
             axis equal;
+        end
+
+        function enable_button_load(obj)
+            h = obj.fig.findobj('Tag', 'button_load');
+            h.Enable = 'on';
         end
     end
 end

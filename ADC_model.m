@@ -156,7 +156,7 @@ classdef ADC_model < handle
 
         function find_S11(obj)
             from = double(int64(obj.peaks_limit_from * obj.freq) + 1);
-            to = double(int64(obj.peaks_limit_to * obj.freq) + 1);
+            to = double(int64(obj.peaks_limit_to * obj.freq));
 
             [~, x_peak] = findpeaks(obj.X(from:to), from:to, 'SortStr','descend','NPeaks',1);
             obj.S11_Y = obj.S11_Y + obj.Y(x_peak);
