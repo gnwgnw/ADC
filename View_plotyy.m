@@ -26,8 +26,9 @@ classdef View_plotyy < View_plot
     methods (Access = private)
         function init_plot(obj)
             axes(obj.hobj);
-            hold on;
+            hold off;
             [obj.haxes, obj.hline, obj.hline2] = plotyy(0, 0, 0, 0);
+            hold on;
 
             arrayfun(@View_plotyy.setup_axes, obj.haxes);
         end
